@@ -1,9 +1,9 @@
 # Licensor
 
-The license management system built on top of Laravel framework. If you sell your scripts (not necessarily based on Laravel) and would like to manage license keys remotely - this package can be useful to you.
-Works in pair with [sribna/licensee](http://github.com/sribna/licensee)
+This package enables license management system for your existing Laravel 7 app. If you sell your scripts (not necessarily based on Laravel) and would like to manage license keys remotely - this package can be useful to you.
+Works in pair with [sribna/licensee](http://github.com/sribna/licensee). Note: this package does not provide any UI.
 
-## Features
+## What included
  - Plans and plan features
  - Middleware to check user access according to purchased plan
  - Key activation/deactivation
