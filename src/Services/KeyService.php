@@ -4,7 +4,6 @@ namespace Sribna\Licensor\Services;
 
 use App\User;
 use GuzzleHttp\Client;
-use Illuminate\Pipeline\Pipeline;
 use Illuminate\Support\Str;
 use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
@@ -19,8 +18,6 @@ use Sribna\Licensor\Exceptions\KeyValidationException;
 use Sribna\Licensor\Exceptions\KeyVerificationException;
 use Sribna\Licensor\Models\Key;
 use Sribna\Licensor\Models\Secret;
-use Sribna\Licensor\Repositories\KeyRepository;
-use Sribna\Licensor\Repositories\SecretRepository;
 use Throwable;
 
 /**
@@ -29,15 +26,6 @@ use Throwable;
  */
 class KeyService
 {
-    /**
-     * @var KeyRepository
-     */
-    protected $key;
-
-    /**
-     * @var SecretRepository
-     */
-    protected $secret;
 
     /**
      * @var Client
@@ -46,15 +34,11 @@ class KeyService
 
     /**
      * KeyService constructor.
-     * @param KeyRepository $key
-     * @param SecretRepository $secret
      * @param Client $http
      */
-    public function __construct(KeyRepository $key, SecretRepository $secret, Client $http)
+    public function __construct(Client $http)
     {
-        $this->key = $key;
         $this->http = $http;
-        $this->secret = $secret;
     }
 
     /**
@@ -64,11 +48,7 @@ class KeyService
      */
     public function generate(int $length = 32): string
     {
-        $key = Str::random($length);
-
-        return (new Pipeline())->send($key)
-            ->through(config('licensor.key_generation_pipes'))
-            ->thenReturn();
+        return Str::random($length);
     }
 
     /**
@@ -76,21 +56,24 @@ class KeyService
      * @param int $userId
      * @param int $planId
      * @param string $domain
+     * @param string|null $key
      * @return Key
      * @throws Throwable
      */
-    public function issue(int $userId, int $planId, string $domain): Key
+    public function issue(int $userId, int $planId, string $domain, string $key = null): Key
     {
-        if ($this->key->domainTakenByAnotherUser($domain, $userId)) {
+        if (Key::where('domain', $domain)
+            ->where('user_id', '<>', $userId)
+            ->exists()) {
             throw new RuntimeException('Domain already taken by another user');
         }
 
-        $key = $this->key->createOrFail([
+        $key = Key::create([
             'status' => true,
             'domain' => $domain,
             'plan_id' => $planId,
             'user_id' => $userId,
-            'id' => $this->generate(),
+            'id' => $key ?: $this->generate(),
         ]);
 
         event(new KeyIssued($key));
@@ -107,7 +90,7 @@ class KeyService
         [$hash, $publicKey, $domain] = $this->parse($privateKey);
 
         /** @var Key $key */
-        if (!($key = $this->key->find($publicKey))) {
+        if (!($key = Key::find($publicKey))) {
             throw new KeyValidationException('Key does not exist');
         }
 
@@ -187,7 +170,10 @@ class KeyService
     public function callback(Key $key, Secret $secret)
     {
         $privateKey = $this->build($key, $secret);
-        $response = $this->http->post($this->getCallbackUrl($key->domain), ['body' => $privateKey]);
+
+        $response = $this->http->post($this->getCallbackUrl($key->domain), [
+            'body' => $privateKey
+        ]);
 
         event(new PrivateKeySent($key, $secret, $privateKey, $response));
         return $response;
@@ -202,7 +188,7 @@ class KeyService
     public function findSecret(Key $key, string $hash): ?Secret
     {
         /** @var Secret $secret */
-        foreach ($this->secret->getActive() as $secret) {
+        foreach (Secret::active()->get() as $secret) {
             if (hash_equals($this->hash($key, $secret), $hash)) {
                 return $secret;
             }

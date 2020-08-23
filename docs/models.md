@@ -26,7 +26,7 @@ Stores information about the public key
 | updated_at   | datetime | Optional. Date when key was updated   |
 
 ## Plan
-Stores pricing strategies to be applied for a product and associated services
+Stores pricing strategies to be applied for a product
 
 | Attribute | Type   | Description                                   |
 |-----------|:------:|----------------------------------------------:|
@@ -39,7 +39,7 @@ Stores pricing strategies to be applied for a product and associated services
 | weight    | int    | Optional. Position in lists (ascending order) |
 
 ## Secret
-Stores secret paraphrases which apply on the client-side to salt the hash of a private key
+Stores secret phrases which apply on the client-side to salt the hash of a private key
 
 | Attribute | Type   | Description                   |
 |-----------|:------:|------------------------------:|

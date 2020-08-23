@@ -44,4 +44,22 @@ class Secret extends Model
     protected $casts = [
         'status' => 'boolean'
     ];
+
+    /**
+     * Enable the secret
+     * @return bool
+     */
+    public function enable()
+    {
+        return $this->update(['status' => true]);
+    }
+
+    /**
+     * Disable the secret
+     * @return bool
+     */
+    public function disable()
+    {
+        return $this->update(['status' => false]);
+    }
 }

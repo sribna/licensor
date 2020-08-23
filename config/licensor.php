@@ -25,9 +25,4 @@ return [
      */
     'key_expiration_time_offset' => 60 * 60 * 24,
     'key_shutdown_time_offset' => 60 * 60 * 24,
-
-    /*
-     * An array of classes for key generation pipeline
-     */
-    'key_generation_pipes' => [],
 ];
