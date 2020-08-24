@@ -40,4 +40,4 @@ Create one plan, create and assign one feature, create one public key for user I
     
     $publicKey = $key->id;
 
-Also, make sure you have created at least one [secret](secrets.md) and your licensees use them in their checker files.
+Also, make sure you have created at least one [secret](Secrets.md) and your licensees use them in their checker files.

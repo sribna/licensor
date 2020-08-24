@@ -3,7 +3,7 @@
 Namespace: _Sribna\Licensor\Models_
 
 ## Feature
-Plan features define the benefits a customer can get when purchasing a plan
+Stores plan features. Plan features are the benefits a customer can get when purchasing a plan
 
 | Attribute     | Type           | Description                              |
 |---------------|:--------------:|-----------------------------------------:|
@@ -39,7 +39,7 @@ Stores pricing strategies to be applied for a product
 | weight    | int    | Optional. Position in lists (ascending order) |
 
 ## Secret
-Stores secret phrases which apply on the client-side to salt the hash of a private key
+Stores secret phrases that used for salting private keys
 
 | Attribute | Type   | Description                   |
 |-----------|:------:|------------------------------:|

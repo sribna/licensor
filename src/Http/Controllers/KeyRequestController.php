@@ -4,6 +4,7 @@ namespace Sribna\Licensor\Http\Controllers;
 
 use Closure;
 use Exception;
+use GuzzleHttp\TransferStats;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Sribna\Licensor\Models\Key;
@@ -40,7 +41,7 @@ class KeyRequestController
     public function check(Request $request)
     {
         return $this->process($request, function (Request $request) {
-            $data = $this->key->validate($request);
+            $data = $this->key->validate($request->getContent());
             $this->key->verify(reset($data));
             return $data;
         });
@@ -69,20 +70,27 @@ class KeyRequestController
     private function process(Request $request, Closure $function)
     {
         try {
+
             /** @var Key $key */
             /** @var Secret $secret */
             [$key, $secret] = $function($request);
+
         } catch (Exception $exception) {
             return $this->error($exception, 400);
         }
 
         try {
-            $this->key->callback($key, $secret);
+
+            $path = $request->header('Licensee-Callback');
+
+            /** @var TransferStats $transfer */
+            $transfer = $this->key->callback($key, $secret, $path)[1];
+
         } catch (Exception $exception) {
             return $this->error($exception, 500);
         }
 
-        return response()->json(['success' => 'Response has been sent']);
+        return response()->json(['success' => $transfer->getEffectiveUri()]);
     }
 
     /**

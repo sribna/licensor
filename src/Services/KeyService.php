@@ -4,8 +4,8 @@ namespace Sribna\Licensor\Services;
 
 use App\User;
 use GuzzleHttp\Client;
+use GuzzleHttp\TransferStats;
 use Illuminate\Support\Str;
-use Psr\Http\Message\ResponseInterface;
 use RuntimeException;
 use Sribna\Licensor\Events\KeyActivated;
 use Sribna\Licensor\Events\KeyIssued;
@@ -165,18 +165,24 @@ class KeyService
      * Send the private key to the licensee
      * @param Key $key
      * @param Secret $secret
-     * @return ResponseInterface
+     * @param string|null $path
+     * @return array
      */
-    public function callback(Key $key, Secret $secret)
+    public function callback(Key $key, Secret $secret, string $path = null)
     {
         $privateKey = $this->build($key, $secret);
 
-        $response = $this->http->post($this->getCallbackUrl($key->domain), [
-            'body' => $privateKey
+        $transfer = null;
+
+        $response = $this->http->post($this->getCallbackUrl($key->domain, $path), [
+            'body' => $privateKey,
+            'on_stats' => function (TransferStats $stats) use (&$transfer) {
+                $transfer = $stats;
+            }
         ]);
 
-        event(new PrivateKeySent($key, $secret, $privateKey, $response));
-        return $response;
+        event(new PrivateKeySent($key, $secret, $privateKey, $response, $transfer));
+        return [$response, $transfer];
     }
 
     /**
@@ -200,11 +206,12 @@ class KeyService
     /**
      * Returns the callback URL to which the private key will be sent
      * @param string $domain
+     * @param string|null $path
      * @return string
      */
-    public function getCallbackUrl(string $domain)
+    public function getCallbackUrl(string $domain, string $path = null)
     {
-        return "http://$domain/" . config('licensor.licensee_callback_path');
+        return "http://$domain/" . ($path ?: config('licensor.licensee_callback_path'));
     }
 
     /**

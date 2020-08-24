@@ -96,7 +96,7 @@ class Key extends Model
      */
     public function user()
     {
-        return $this->belongsTo(config('licensor.config.user_model'));
+        return $this->belongsTo(User::class);
     }
 
     /**

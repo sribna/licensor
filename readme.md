@@ -22,10 +22,16 @@ If no updates are received within a certain period, then his script stops workin
 
 ## Installation
 
-Via Composer
+Download
 
 ``` bash
 $ composer require sribna/licensor
+```
+
+Run migration
+
+``` bash
+$ php artisan migrate
 ```
 
 ## Usage
