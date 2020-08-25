@@ -90,7 +90,9 @@ class KeyRequestController
             return $this->error($exception, 500);
         }
 
-        return response()->json(['success' => $transfer->getEffectiveUri()]);
+        return response()->json([
+            'success' => trim(parse_url($transfer->getEffectiveUri(), PHP_URL_PATH), '/')
+        ]);
     }
 
     /**

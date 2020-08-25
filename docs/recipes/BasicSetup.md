@@ -1,4 +1,5 @@
-#Basic setup
+# Basic setup
+
 Create one plan, create and assign one feature, create one public key for user ID `1` and domain `test.com`
 
     use Sribna\Licensor\Models\Plan;

@@ -1,4 +1,4 @@
-#Middleware
+# Middleware
 
 You can use the `licensor.key.feature` middleware to restrict access to certain areas on your site
 depending on the features that are defined for the customer's key plan. This can be useful, for example, when

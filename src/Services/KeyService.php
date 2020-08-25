@@ -62,9 +62,7 @@ class KeyService
      */
     public function issue(int $userId, int $planId, string $domain, string $key = null): Key
     {
-        if (Key::where('domain', $domain)
-            ->where('user_id', '<>', $userId)
-            ->exists()) {
+        if ($this->domainBelongsToAnotherUser($domain, $userId)) {
             throw new RuntimeException('Domain already taken by another user');
         }
 
@@ -78,6 +76,19 @@ class KeyService
 
         event(new KeyIssued($key));
         return $key;
+    }
+
+    /**
+     * Whether the domain belong to a user other than the one specified
+     * @param string $domain
+     * @param int $userId
+     * @return bool
+     */
+    public function domainBelongsToAnotherUser(string $domain, int $userId)
+    {
+        return Key::where('domain', $domain)
+            ->where('user_id', '<>', $userId)
+            ->exists();
     }
 
     /**
@@ -251,24 +262,27 @@ class KeyService
      * Build a private key
      * @param Key $key
      * @param Secret $secret
+     * @param array $settings
      * @return string
      */
-    public function build(Key $key, Secret $secret): string
+    public function build(Key $key, Secret $secret, array $settings = []): string
     {
-        $jsonSettings = json_encode($this->getSettings($key));
+        $settings += $this->getDefaultSettings();
+
+        $settings['key'] = $key->id;
+        $settings['domain'] = $key->domain;
+
+        $jsonSettings = json_encode($settings);
         return base64_encode(md5($jsonSettings . $secret->id) . "|$jsonSettings");
     }
 
     /**
-     * Private key settings
-     * @param Key $key
+     * Private key default settings
      * @return array
      */
-    public function getSettings(Key $key): array
+    protected function getDefaultSettings(): array
     {
         return [
-            'key' => $key->id,
-            'domain' => $key->domain,
             'shutdown_offset' => config('licensor.key_shutdown_time_offset'),
             'expires_at' => time() + config('licensor.key_expiration_time_offset')
         ];

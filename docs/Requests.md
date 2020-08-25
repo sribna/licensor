@@ -13,7 +13,7 @@
 **Success response:**
 
     Code: 200
-    Content: {"success" : "Callback URI"}
+    Content: {"success" : "Callback URL path"}
     
 **Error response:**
 
@@ -31,7 +31,7 @@
 **Success response:**
 
     Code: 200
-    Content: {"success" : "Callback URI"}
+    Content: {"success" : "Callback URL path"}
     
 **Error response:**
 
