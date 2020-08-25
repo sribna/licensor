@@ -36,13 +36,7 @@ $ php artisan migrate
 
 ## Usage
 
-See [documentation](docs)
-
-## Testing
-
-``` bash
-$ composer test
-```
+See the [documentation](docs)
 
 ## Security
 
