@@ -197,7 +197,7 @@ class KeyService
     }
 
     /**
-     * Finds a matching passphrase for the key
+     * Finds a matching passphrase for the key and request hash
      * @param Key $key
      * @param string $hash
      * @return Secret|null
@@ -207,6 +207,24 @@ class KeyService
         /** @var Secret $secret */
         foreach (Secret::active()->get() as $secret) {
             if (hash_equals($this->hash($key, $secret), $hash)) {
+                return $secret;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Finds a matching passphrase for the key and token hash
+     * @param Key $key
+     * @param string $token
+     * @return Secret|null
+     */
+    public function findTokenSecret(Key $key, string $token): ?Secret
+    {
+        /** @var Secret $secret */
+        foreach (Secret::active()->get() as $secret) {
+            if (hash_equals($this->hashToken($key, $secret), $token)) {
                 return $secret;
             }
         }
@@ -248,7 +266,7 @@ class KeyService
     }
 
     /**
-     * Hash key - secret pair
+     * Hash key, secret and domain parts
      * @param Key $key
      * @param Secret $secret
      * @return string
@@ -256,6 +274,17 @@ class KeyService
     public function hash(Key $key, Secret $secret): string
     {
         return md5("{$secret->id}{$key->id}|{$key->domain}");
+    }
+
+    /**
+     * Hash secret - key pair
+     * @param Key $key
+     * @param Secret $secret
+     * @return string
+     */
+    public function hashToken(Key $key, Secret $secret)
+    {
+        return md5($secret->id . $key->id);
     }
 
     /**
